@@ -30,7 +30,7 @@ module.exports.getUser = (req, res) => {
         return res.status(404).send({
           message: "Пользователь не найден",
         });
-      const { _id, name, about, avatar } = user[0];
+      const { _id, name, about, avatar } = data[0];
       res.send({ _id, name, about, avatar });
     })
     .catch((err) => res.status(500).send({ message: err.message }));
