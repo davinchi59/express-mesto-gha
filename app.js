@@ -22,6 +22,10 @@ app.use((req, res, next) => {
 app.use("/users", require("./routes/user"));
 app.use("/cards", require("./routes/card"));
 
+app.use((req, res, next) => {
+  res.status(404).send({ message: "Такого роута не существует" });
+});
+
 app.listen(PORT, () => {
   console.log("Сервер запущен на порте 3000");
 });
