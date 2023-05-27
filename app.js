@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const { celebrate } = require('celebrate');
+const { celebrate, errors } = require('celebrate');
 const Joi = require('joi');
 const { login, createUser } = require('./controllers/user');
 const authMiddleware = require('./middlewares/auth');
@@ -34,7 +34,7 @@ app.post(
     body: Joi.object().keys({
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
-      avatar: Joi.string().regex(/^https?:\/\/(wwq\.)?[a-z0-9\-._~:/?#[\]@!$&'()*+,;=]{1,}#?$/i),
+      avatar: Joi.string().pattern(/^https?:\/\/(wwq\.)?[a-z0-9\-._~:/?#[\]@!$&'()*+,;=]{1,}#?$/i),
       email: Joi.string().required().email(),
       password: Joi.string().required(),
     }),
@@ -51,6 +51,7 @@ app.use((req, res) => {
   res.status(404).send({ message: 'Такого роута не существует' });
 });
 
+app.use(errors());
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
