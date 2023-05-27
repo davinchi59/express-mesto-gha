@@ -9,7 +9,7 @@ const User = require('../models/user');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.send(
+    .then((users) => res.status(200).send(
       users.map(({
         _id, name, about, avatar,
       }) => ({
@@ -43,7 +43,7 @@ module.exports.getUser = (req, res, next) => {
       const {
         _id, name, about, avatar,
       } = data[0];
-      res.send({
+      res.status(200).send({
         _id, name, about, avatar,
       });
     })
@@ -67,7 +67,12 @@ module.exports.createUser = (req, res, next) => {
       email,
       password: hashedPassword,
     }))
-    .then((user) => res.status(201).send(user))
+    .then((user) => res.status(201).send({
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectDataError('Переданы некорректные данные для создания пользователя'));
@@ -110,7 +115,7 @@ module.exports.login = (req, res, next) => {
         throw new NotAuthError('Почта или пароль введены неверно');
       }
       const token = jwt.sign({ _id: user._id }, '9198ad99c86faa69436dbd8602f720c5e5d3b33f4958c399e7c278a54a9721dc', { expiresIn: '7d' });
-      res.cookie('jwt', token, { httpOnly: true }).end();
+      res.status(200).cookie('jwt', token, { httpOnly: true }).end();
     })
     .catch(next);
 };
