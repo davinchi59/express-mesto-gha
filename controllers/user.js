@@ -23,11 +23,9 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  let userId;
+  let { userId } = req.params;
 
-  if (req.params.userId) {
-    userId = req.params.userId;
-  } else {
+  if (!isValidObjectId(userId)) {
     userId = req.user._id;
   }
 
