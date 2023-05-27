@@ -1,11 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { celebrate } = require('celebrate');
+const Joi = require('joi');
 const { login, createUser } = require('./controllers/user');
 const authMiddleware = require('./middlewares/auth');
 const errorMiddleware = require('./middlewares/errorMiddleware');
-const { celebrate } = require('celebrate');
-const Joi = require('joi');
 
 const { PORT = 3000 } = process.env;
 
