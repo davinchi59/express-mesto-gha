@@ -110,7 +110,7 @@ module.exports.login = (req, res, next) => {
       if (!user) {
         throw new NotAuthError('Почта или пароль введены неверно');
       }
-      const matched = await bcrypt.compare(user.password, password);
+      const matched = await bcrypt.compare(password, user.password);
       if (!matched) {
         throw new NotAuthError('Почта или пароль введены неверно');
       }
