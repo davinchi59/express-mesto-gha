@@ -41,6 +41,9 @@ module.exports.getUser = (req, res, next) => {
       const {
         _id, name, about, avatar,
       } = data[0];
+      if (!_id.length || !name.length || about.length || !avatar.length) {
+        throw new Error('Ошибка возврата данных в базе данных');
+      }
       res.status(200).send({
         _id, name, about, avatar,
       });
