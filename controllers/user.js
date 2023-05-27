@@ -1,7 +1,13 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { isValidObjectId } = require('mongoose');
+const IncorrectDataError = require('../errors/IncorrectDataError');
+const NotAuthError = require('../errors/NotAuthError');
+const NotFoundError = require('../errors/NotFoundError');
+const AlreadyExistsError = require('../errors/AlreadyExistsError');
 const User = require('../models/user');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(
       users.map(({
@@ -13,24 +19,26 @@ module.exports.getUsers = (req, res) => {
         avatar,
       })),
     ))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
-  const { userId } = req.params;
+module.exports.getUser = (req, res, next) => {
+  let userId;
+
+  if (req.params.userId) {
+    userId = req.params.userId;
+  } else {
+    userId = req.user._id;
+  }
 
   if (!isValidObjectId(userId)) {
-    return res.status(400).send({
-      message: 'Переданы некорректные данные',
-    });
+    throw new IncorrectDataError('Переданы некорректные данные для получения данных пользователя');
   }
 
   User.find({ _id: userId })
     .then((data) => {
       if (!data.length) {
-        return res.status(404).send({
-          message: 'Пользователь не найден',
-        });
+        throw new NotFoundError('Пользователь не найден');
       }
       const {
         _id, name, about, avatar,
@@ -39,26 +47,39 @@ module.exports.getUser = (req, res) => {
         _id, name, about, avatar,
       });
     })
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+module.exports.createUser = (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
+  bcrypt.hash(password, 10)
+    .then((hashedPassword) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hashedPassword,
+    }))
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: 'Переданы некорректные данные для создания пользователя',
-        });
+        next(new IncorrectDataError('Переданы некорректные данные для создания пользователя'));
+      } else if (err.code === 11000) {
+        next(new AlreadyExistsError('Пользователь с таким Email уже существует'));
       } else {
-        res.status(500).send({ message: err.message });
+        next(new Error(err.message));
       }
     });
 };
 
-module.exports.updateUserProfile = (req, res) => {
+module.exports.updateUserProfile = (req, res, next) => {
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, req.body, { new: true, runValidators: true })
@@ -69,9 +90,27 @@ module.exports.updateUserProfile = (req, res) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        next(IncorrectDataError('Переданы некорректные данные для обновления данных пользователя'));
       } else {
-        res.status(500).send({ message: err.message });
+        next(new Error(err.message));
       }
     });
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email }).select('+password')
+    .then(async (user) => {
+      if (!user) {
+        throw new NotAuthError('Почта или пароль введены неверно');
+      }
+      const matched = await bcrypt.compare(user.password, password);
+      if (!matched) {
+        throw new NotAuthError('Почта или пароль введены неверно');
+      }
+      const token = jwt.sign({ _id: user._id }, '9198ad99c86faa69436dbd8602f720c5e5d3b33f4958c399e7c278a54a9721dc', { expiresIn: '7d' });
+      res.cookie('jwt', token, { httpOnly: true }).end();
+    })
+    .catch(next);
 };
