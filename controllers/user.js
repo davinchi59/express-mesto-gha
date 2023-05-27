@@ -115,7 +115,7 @@ module.exports.login = (req, res, next) => {
         throw new NotAuthError('Почта или пароль введены неверно');
       }
       const token = jwt.sign({ _id: user._id }, '9198ad99c86faa69436dbd8602f720c5e5d3b33f4958c399e7c278a54a9721dc', { expiresIn: '7d' });
-      res.status(200).cookie('jwt', token, { httpOnly: true }).end();
+      res.status(200).cookie('jwt', token, { httpOnly: true }).send({ _id: user._id });
     })
     .catch(next);
 };
