@@ -1,5 +1,4 @@
 const celebrate = require('celebrate');
-const IncorrectDataError = require('../errors/IncorrectDataError');
 
 module.exports = (err, req, res, next) => {
   if (celebrate.isCelebrateError(err)) {
