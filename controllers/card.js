@@ -1,4 +1,4 @@
-const { isValidObjectId, default: mongoose } = require('mongoose');
+const { isValidObjectId } = require('mongoose');
 const ForbiddenError = require('../errors/ForbiddenError');
 const IncorrectDataError = require('../errors/IncorrectDataError');
 const NotFoundError = require('../errors/NotFoundError');
