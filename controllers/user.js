@@ -97,7 +97,7 @@ module.exports.updateUserProfile = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(IncorrectDataError('Переданы некорректные данные для обновления данных пользователя'));
+        next(new IncorrectDataError('Переданы некорректные данные для обновления данных пользователя'));
       } else {
         next(new Error(err.message));
       }
