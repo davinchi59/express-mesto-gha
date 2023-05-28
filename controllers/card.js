@@ -50,15 +50,33 @@ module.exports.removeCard = (req, res, next) => {
   if (!isValidObjectId(cardId)) {
     throw new IncorrectDataError('Переданы некорректные данные для удаления карточки');
   }
-
-  Card.deleteOne({ _id: cardId, owner: userId })
+  Card.findById(cardId).orFail()
+    .then((card) => {
+      if (card.owner !== userId) {
+        throw new ForbiddenError('Вы не можете удалить данную карточку');
+      }
+      return Card.deleteOne({ _id: cardId });
+    })
     .then(({ deletedCount }) => {
       if (!deletedCount) {
-        throw new ForbiddenError('Неверные данные для удаления');
+        throw new Error('Серверная ошибка');
       }
       return res.status(200).send({ message: 'Карточка удалена' });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        next(new NotFoundError('Карточка не найдена'));
+      }
+      next(err);
+    });
+  // Card.deleteOne({ _id: cardId, owner: userId })
+  //   .then(({ deletedCount }) => {
+  //     if (!deletedCount) {
+  //       throw new ForbiddenError('Неверные данные для удаления');
+  //     }
+  //     return res.status(200).send({ message: 'Карточка удалена' });
+  //   })
+  //   .catch(next);
 };
 
 module.exports.addCardLike = (req, res, next) => {
