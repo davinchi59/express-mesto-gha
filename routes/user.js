@@ -32,6 +32,11 @@ router.patch(
 );
 router.patch(
   '/me/avatar',
+  celebrate({
+    body: Joi.object().keys({
+      avatar: Joi.string().pattern(/^https?:\/\/(wwq\.)?[a-z0-9\-._~:/?#[\]@!$&'()*+,;=]{1,}#?$/i),
+    }),
+  }),
   (req, res, next) => {
     req.body = { avatar: req.body.avatar };
     next();
