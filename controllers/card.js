@@ -1,4 +1,4 @@
-const { isValidObjectId } = require('mongoose');
+const { isValidObjectId, default: mongoose } = require('mongoose');
 const ForbiddenError = require('../errors/ForbiddenError');
 const IncorrectDataError = require('../errors/IncorrectDataError');
 const NotFoundError = require('../errors/NotFoundError');
@@ -52,7 +52,7 @@ module.exports.removeCard = (req, res, next) => {
   }
   Card.findById(cardId).orFail()
     .then((card) => {
-      if (card.owner !== userId) {
+      if (!card.owner.equals(userId)) {
         throw new ForbiddenError('Вы не можете удалить данную карточку');
       }
       return Card.deleteOne({ _id: cardId });
