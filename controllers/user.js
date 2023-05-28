@@ -34,14 +34,13 @@ module.exports.getUser = (req, res, next) => {
   }
 
   User.findById(userId)
-    .orFail(new IncorrectDataError('Некорректные данные'))
-    .then((data) => {
-      if (!data.length) {
-        throw new NotFoundError('Пользователь не найден');
-      }
-      const {
-        _id, name, about, avatar,
-      } = data[0];
+    .orFail()
+    .then(({
+      _id,
+      name,
+      about,
+      avatar,
+    }) => {
       res.status(200).send({
         _id, name, about, avatar,
       });
