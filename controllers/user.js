@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const { isValidObjectId } = require('mongoose');
 const IncorrectDataError = require('../errors/IncorrectDataError');
 const NotAuthError = require('../errors/NotAuthError');
-const NotFoundError = require('../errors/NotFoundError');
 const AlreadyExistsError = require('../errors/AlreadyExistsError');
 const User = require('../models/user');
 
@@ -35,15 +34,8 @@ module.exports.getUser = (req, res, next) => {
 
   User.findById(userId)
     .orFail()
-    .then(({
-      _id,
-      name,
-      about,
-      avatar,
-    }) => {
-      res.status(200).send({
-        _id, name, about, avatar,
-      });
+    .then((user) => {
+      res.status(200).send(user);
     })
     .catch(next);
 };
