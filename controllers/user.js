@@ -16,11 +16,9 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.getUser = (req, res, next) => {
   let { userId } = req.params;
 
-  if (userId === 'me') {
+  if (!userId || userId === 'me') {
     userId = req.user._id;
   }
-
-  console.log(userId);
 
   if (!isValidObjectId(userId)) {
     throw new IncorrectDataError('Переданы некорректные данные для получения данных пользователя');
