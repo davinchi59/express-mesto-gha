@@ -1,42 +1,30 @@
 const router = require('express').Router();
-const { celebrate } = require('celebrate');
 const Joi = require('joi');
 Joi.objectId = require('joi-objectid')(Joi);
-
 const {
   getUsers,
   getUser,
   updateUserProfile,
 } = require('../controllers/user');
+const GetUserValidation = require('../middlewares/validations/GetUserValidation');
+const UpdateUserAvatarValidation = require('../middlewares/validations/UpdateUserAvatarValidation');
+const UpdateUserValidation = require('../middlewares/validations/UpdateUserValidation');
 
 router.get('/', getUsers);
 router.get('/me', getUser);
 router.get(
   '/:userId',
-  celebrate({
-    params: Joi.object().keys({
-      userId: Joi.objectId(),
-    }),
-  }),
+  GetUserValidation,
   getUser,
 );
 router.patch(
   '/me',
-  celebrate({
-    body: Joi.object().keys({
-      name: Joi.string().min(2).max(30),
-      about: Joi.string().min(2).max(30),
-    }),
-  }),
+  UpdateUserValidation,
   updateUserProfile,
 );
 router.patch(
   '/me/avatar',
-  celebrate({
-    body: Joi.object().keys({
-      avatar: Joi.string().pattern(/^https?:\/\/(wwq\.)?[a-z0-9\-._~:/?#[\]@!$&'()*+,;=]{1,}#?$/i),
-    }),
-  }),
+  UpdateUserAvatarValidation,
   (req, res, next) => {
     req.body = { avatar: req.body.avatar };
     next();
