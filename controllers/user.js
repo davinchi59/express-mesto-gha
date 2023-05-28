@@ -8,25 +8,27 @@ const User = require('../models/user');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => res.status(200).send(
-      users.map(({
-        _id, name, about, avatar,
-      }) => ({
-        _id,
-        name,
-        about,
-        avatar,
-      })),
-    ))
+    .then((users) => res.status(200).send(users))
     .catch(next);
 };
 
 module.exports.getUser = (req, res, next) => {
-  let { userId } = req.params;
+  const userId = req.user._id;
 
   if (!isValidObjectId(userId)) {
-    userId = req.user._id;
+    throw new IncorrectDataError('Переданы некорректные данные для получения данных пользователя');
   }
+
+  User.findById(userId)
+    .orFail()
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch(next);
+};
+
+module.exports.getUserById = (req, res, next) => {
+  const { userId } = req.params;
 
   if (!isValidObjectId(userId)) {
     throw new IncorrectDataError('Переданы некорректные данные для получения данных пользователя');
