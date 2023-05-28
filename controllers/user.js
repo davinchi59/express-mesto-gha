@@ -5,6 +5,7 @@ const IncorrectDataError = require('../errors/IncorrectDataError');
 const NotAuthError = require('../errors/NotAuthError');
 const AlreadyExistsError = require('../errors/AlreadyExistsError');
 const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
@@ -13,7 +14,13 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  const userId = req.user._id;
+  let { userId } = req.params;
+
+  if (userId === 'me') {
+    userId = req.user._id;
+  }
+
+  console.log(userId);
 
   if (!isValidObjectId(userId)) {
     throw new IncorrectDataError('Переданы некорректные данные для получения данных пользователя');
@@ -24,7 +31,12 @@ module.exports.getUser = (req, res, next) => {
     .then((user) => {
       res.status(200).send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        next(new NotFoundError('Пользователь с таким "_id" не найден'));
+      }
+      next(err);
+    });
 };
 
 module.exports.getUserById = (req, res, next) => {
