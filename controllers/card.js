@@ -1,4 +1,5 @@
 const { isValidObjectId } = require('mongoose');
+const ForbiddenError = require('../errors/ForbiddenError');
 const IncorrectDataError = require('../errors/IncorrectDataError');
 const NotFoundError = require('../errors/NotFoundError');
 const Card = require('../models/card');
@@ -53,7 +54,7 @@ module.exports.removeCard = (req, res, next) => {
   Card.deleteOne({ _id: cardId, owner: userId })
     .then(({ deletedCount }) => {
       if (!deletedCount) {
-        throw new NotFoundError('Карточка не найдена');
+        throw new ForbiddenError('Неверные данные для удаления');
       }
       return res.status(200).send({ message: 'Карточка удалена' });
     })

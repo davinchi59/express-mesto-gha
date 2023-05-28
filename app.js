@@ -7,6 +7,7 @@ const Joi = require('joi');
 const { login, createUser } = require('./controllers/user');
 const authMiddleware = require('./middlewares/auth');
 const errorMiddleware = require('./middlewares/errorMiddleware');
+const { UrlRegExp } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -36,7 +37,7 @@ app.post(
     body: Joi.object().keys({
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
-      avatar: Joi.string().pattern(/^https?:\/\/(wwq\.)?[a-z0-9\-._~:/?#[\]@!$&'()*+,;=]{1,}#?$/i),
+      avatar: Joi.string().pattern(UrlRegExp),
       email: Joi.string().required().email(),
       password: Joi.string().required(),
     }),
