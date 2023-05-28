@@ -20,7 +20,16 @@ router.get(
   }),
   getUser,
 );
-router.patch('/me', updateUserProfile);
+router.patch(
+  '/me',
+  celebrate({
+    body: Joi.object().keys({
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+    }),
+  }),
+  updateUserProfile,
+);
 router.patch(
   '/me/avatar',
   (req, res, next) => {

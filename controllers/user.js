@@ -90,11 +90,7 @@ module.exports.updateUserProfile = (req, res, next) => {
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, req.body, { new: true, runValidators: true })
-    .then(({
-      _id, name, about, avatar,
-    }) => res.send({
-      _id, name, about, avatar,
-    }))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectDataError('Переданы некорректные данные для обновления данных пользователя'));
