@@ -33,7 +33,8 @@ module.exports.getUser = (req, res, next) => {
     throw new IncorrectDataError('Переданы некорректные данные для получения данных пользователя');
   }
 
-  User.find({ _id: userId })
+  User.findById(userId)
+    .orFail(new IncorrectDataError('Некорректные данные'))
     .then((data) => {
       if (!data.length) {
         throw new NotFoundError('Пользователь не найден');
@@ -41,9 +42,6 @@ module.exports.getUser = (req, res, next) => {
       const {
         _id, name, about, avatar,
       } = data[0];
-      if (!_id.length || !name.length || about.length || !avatar.length) {
-        throw new Error('Ошибка возврата данных в базе данных');
-      }
       res.status(200).send({
         _id, name, about, avatar,
       });
